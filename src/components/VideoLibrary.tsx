@@ -135,7 +135,7 @@ const VideoLibrary = () => {
 
       {videos.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
-          <Video className="w-12 h-12 mx-auto mb-4 opacity-50" />
+          <Play className="w-12 h-12 mx-auto mb-4 opacity-50" />
           <p className="text-lg font-medium mb-2">No videos in your library yet</p>
           <p className="text-sm">Add some YouTube videos to get started!</p>
         </div>
