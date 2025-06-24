@@ -39,6 +39,13 @@ const Index = () => {
     setRefreshTrigger(prev => prev + 1);
   };
 
+  const switchToTab = (tabValue: string) => {
+    const tabElement = document.querySelector(`[value="${tabValue}"]`) as HTMLElement;
+    if (tabElement) {
+      tabElement.click();
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100">
       <Header />
@@ -77,7 +84,7 @@ const Index = () => {
                     Ask questions and get AI-powered responses about your YouTube content and topics.
                   </p>
                   <Button 
-                    onClick={() => document.querySelector('[value="chat"]')?.click()}
+                    onClick={() => switchToTab('chat')}
                     className="bg-orange-600 hover:bg-orange-700"
                   >
                     Start Chatting
@@ -100,7 +107,7 @@ const Index = () => {
                   </p>
                   <Button 
                     variant="outline"
-                    onClick={() => document.querySelector('[value="library"]')?.click()}
+                    onClick={() => switchToTab('library')}
                     className="border-orange-200 text-orange-600 hover:bg-orange-50"
                   >
                     Browse Library
@@ -123,7 +130,7 @@ const Index = () => {
                   </p>
                   <Button 
                     variant="outline"
-                    onClick={() => document.querySelector('[value="add"]')?.click()}
+                    onClick={() => switchToTab('add')}
                     className="border-orange-200 text-orange-600 hover:bg-orange-50"
                   >
                     Add Video
