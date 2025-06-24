@@ -7,8 +7,9 @@ import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MessageSquare, Video, Search, Plus } from 'lucide-react';
+import { MessageSquare, Video, Search, Plus, Youtube } from 'lucide-react';
 import YouTubeUrlInput from '@/components/YouTubeUrlInput';
+import YouTubeChannelInput from '@/components/YouTubeChannelInput';
 import AIChat from '@/components/AIChat';
 import VideoLibrary from '@/components/VideoLibrary';
 
@@ -65,7 +66,7 @@ const Index = () => {
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="chat">AI Chat</TabsTrigger>
             <TabsTrigger value="library">Library</TabsTrigger>
-            <TabsTrigger value="add">Add Video</TabsTrigger>
+            <TabsTrigger value="add">Add Content</TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard" className="space-y-6">
@@ -184,28 +185,55 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="add">
-            <Card className="border-orange-100">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Plus className="w-5 h-5 text-orange-600" />
-                  Add YouTube Video
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-gray-600">
-                  Paste a YouTube URL below to add it to your library. We'll automatically extract the title, description, and other metadata.
-                </p>
-                <YouTubeUrlInput onVideoAdded={handleVideoAdded} />
-                
-                <div className="mt-6 p-4 bg-orange-50 rounded-lg">
-                  <h4 className="font-medium text-gray-900 mb-2">Supported formats:</h4>
-                  <ul className="text-sm text-gray-600 space-y-1">
-                    <li>• https://www.youtube.com/watch?v=VIDEO_ID</li>
-                    <li>• https://youtu.be/VIDEO_ID</li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card className="border-orange-100">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Plus className="w-5 h-5 text-orange-600" />
+                    Add Single Video
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-gray-600">
+                    Paste a YouTube URL below to add a single video to your library.
+                  </p>
+                  <YouTubeUrlInput onVideoAdded={handleVideoAdded} />
+                  
+                  <div className="mt-6 p-4 bg-orange-50 rounded-lg">
+                    <h4 className="font-medium text-gray-900 mb-2">Supported formats:</h4>
+                    <ul className="text-sm text-gray-600 space-y-1">
+                      <li>• https://www.youtube.com/watch?v=VIDEO_ID</li>
+                      <li>• https://youtu.be/VIDEO_ID</li>
+                    </ul>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-orange-100">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Youtube className="w-5 h-5 text-orange-600" />
+                    Add Entire Channel
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-gray-600">
+                    Add all videos from a YouTube channel to your library at once.
+                  </p>
+                  <YouTubeChannelInput onChannelAdded={handleVideoAdded} />
+                  
+                  <div className="mt-6 p-4 bg-orange-50 rounded-lg">
+                    <h4 className="font-medium text-gray-900 mb-2">Supported formats:</h4>
+                    <ul className="text-sm text-gray-600 space-y-1">
+                      <li>• https://www.youtube.com/@channelname</li>
+                      <li>• https://www.youtube.com/channel/UCxxxxxx</li>
+                      <li>• https://www.youtube.com/c/channelname</li>
+                      <li>• https://www.youtube.com/user/username</li>
+                    </ul>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </main>

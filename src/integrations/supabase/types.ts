@@ -30,6 +30,72 @@ export type Database = {
         }
         Relationships: []
       }
+      youtube_videos: {
+        Row: {
+          category_id: string | null
+          channel_id: string | null
+          channel_title: string | null
+          comment_count: number | null
+          created_at: string
+          default_language: string | null
+          description: string | null
+          duration: string | null
+          id: string
+          like_count: number | null
+          published_at: string | null
+          tags: string[] | null
+          thumbnail_url: string | null
+          title: string
+          transcript: string | null
+          updated_at: string
+          user_id: string
+          video_id: string
+          view_count: number | null
+        }
+        Insert: {
+          category_id?: string | null
+          channel_id?: string | null
+          channel_title?: string | null
+          comment_count?: number | null
+          created_at?: string
+          default_language?: string | null
+          description?: string | null
+          duration?: string | null
+          id?: string
+          like_count?: number | null
+          published_at?: string | null
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title: string
+          transcript?: string | null
+          updated_at?: string
+          user_id: string
+          video_id: string
+          view_count?: number | null
+        }
+        Update: {
+          category_id?: string | null
+          channel_id?: string | null
+          channel_title?: string | null
+          comment_count?: number | null
+          created_at?: string
+          default_language?: string | null
+          description?: string | null
+          duration?: string | null
+          id?: string
+          like_count?: number | null
+          published_at?: string | null
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title?: string
+          transcript?: string | null
+          updated_at?: string
+          user_id?: string
+          video_id?: string
+          view_count?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
