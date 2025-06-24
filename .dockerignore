@@ -9,3 +9,9 @@ README.md
 coverage
 .DS_Store
 dist
+*.log
+.vscode
+.idea
+*.swp
+*.swo
+*~

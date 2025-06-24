@@ -5,11 +5,11 @@ FROM node:18-alpine as builder
 # Set working directory
 WORKDIR /app
 
-# Copy package files
+# Copy package files first for better caching
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm ci --only=production
 
 # Copy source code
 COPY . .
@@ -20,7 +20,7 @@ RUN npm run build
 # Production stage
 FROM nginx:alpine
 
-# Copy built files to nginx
+# Copy built files to nginx (Vite builds to 'dist' by default)
 COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Copy nginx configuration
