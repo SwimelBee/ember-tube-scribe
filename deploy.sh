@@ -2,7 +2,7 @@
 #!/bin/bash
 
 # Configuration
-PROJECT_ID="your-gcp-project-id"
+PROJECT_ID="vernal-parser-463912-n4"
 SERVICE_NAME="youtube-ai-assistant"
 REGION="us-central1"
 IMAGE_NAME="gcr.io/${PROJECT_ID}/${SERVICE_NAME}"
