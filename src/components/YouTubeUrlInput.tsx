@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 interface YouTubeUrlInputProps {
   onVideoAdded: () => void;
@@ -13,6 +15,7 @@ const YouTubeUrlInput = ({ onVideoAdded }: YouTubeUrlInputProps) => {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const extractVideoId = (url: string) => {
     const regex = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/;
@@ -23,7 +26,7 @@ const YouTubeUrlInput = ({ onVideoAdded }: YouTubeUrlInputProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!url.trim()) return;
+    if (!url.trim() || !user) return;
     
     const videoId = extractVideoId(url);
     if (!videoId) {
@@ -38,20 +41,27 @@ const YouTubeUrlInput = ({ onVideoAdded }: YouTubeUrlInputProps) => {
     setLoading(true);
     
     try {
-      // Simulate API call to add video
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log('Fetching video metadata for:', videoId);
       
+      // Call the edge function to fetch video metadata
+      const { data, error } = await supabase.functions.invoke('fetch-youtube-video', {
+        body: { videoId, userId: user.id }
+      });
+
+      if (error) throw error;
+
       toast({
         title: "Video Added!",
-        description: "YouTube video has been added to your library",
+        description: `"${data.title}" has been added to your library`,
       });
       
       setUrl('');
       onVideoAdded();
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Error adding video:', error);
       toast({
         title: "Error",
-        description: "Failed to add video to library",
+        description: error.message || "Failed to add video to library",
         variant: "destructive",
       });
     } finally {
@@ -70,7 +80,7 @@ const YouTubeUrlInput = ({ onVideoAdded }: YouTubeUrlInputProps) => {
       />
       <Button 
         type="submit" 
-        disabled={loading}
+        disabled={loading || !user}
         className="bg-orange-600 hover:bg-orange-700"
       >
         {loading ? (
