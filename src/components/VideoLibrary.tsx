@@ -1,12 +1,13 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, Play, Clock, Eye, Loader2 } from 'lucide-react';
+import { Search, Play, Clock, Eye, Loader2, FileText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import TranscriptModal from './TranscriptModal';
 
 interface Video {
   id: string;
@@ -20,12 +21,23 @@ interface Video {
   published_at: string;
   channel_title: string;
   tags: string[];
+  transcript: string | null;
 }
 
 const VideoLibrary = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
+  const [transcriptModal, setTranscriptModal] = useState<{
+    isOpen: boolean;
+    videoTitle: string;
+    transcript: string;
+  }>({
+    isOpen: false,
+    videoTitle: '',
+    transcript: '',
+  });
+  const [transcribingVideos, setTranscribingVideos] = useState<Set<string>>(new Set());
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -112,6 +124,78 @@ const VideoLibrary = () => {
     window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
   };
 
+  const generateTranscript = async (video: Video) => {
+    if (!user) return;
+
+    setTranscribingVideos(prev => new Set(prev).add(video.video_id));
+
+    try {
+      console.log('Generating transcript for video:', video.video_id);
+
+      const { data, error } = await supabase.functions.invoke('transcribe-video', {
+        body: {
+          videoId: video.video_id,
+          userId: user.id
+        }
+      });
+
+      if (error) {
+        console.error('Error calling transcribe function:', error);
+        throw error;
+      }
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      // Update local state
+      setVideos(prevVideos => 
+        prevVideos.map(v => 
+          v.video_id === video.video_id 
+            ? { ...v, transcript: data.transcript }
+            : v
+        )
+      );
+
+      toast({
+        title: "Success",
+        description: data.message || "Transcript generated successfully",
+      });
+
+      // Show transcript modal
+      setTranscriptModal({
+        isOpen: true,
+        videoTitle: video.title,
+        transcript: data.transcript,
+      });
+
+    } catch (error: any) {
+      console.error('Error generating transcript:', error);
+      
+      toast({
+        title: "Error",
+        description: "Failed to generate transcript. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setTranscribingVideos(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(video.video_id);
+        return newSet;
+      });
+    }
+  };
+
+  const showTranscript = (video: Video) => {
+    if (video.transcript) {
+      setTranscriptModal({
+        isOpen: true,
+        videoTitle: video.title,
+        transcript: video.transcript,
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -144,11 +228,10 @@ const VideoLibrary = () => {
           {filteredVideos.map((video) => (
             <Card 
               key={video.id} 
-              className="group hover:shadow-md transition-shadow cursor-pointer border border-orange-100"
-              onClick={() => openVideo(video.video_id)}
+              className="group hover:shadow-md transition-shadow border border-orange-100"
             >
               <CardHeader className="p-0">
-                <div className="relative">
+                <div className="relative cursor-pointer" onClick={() => openVideo(video.video_id)}>
                   <img
                     src={video.thumbnail_url || '/placeholder.svg?height=120&width=200'}
                     alt={video.title}
@@ -181,6 +264,40 @@ const VideoLibrary = () => {
                     {formatDate(video.published_at)}
                   </div>
                 </div>
+
+                <div className="flex gap-2 mb-3">
+                  {video.transcript ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => showTranscript(video)}
+                      className="flex items-center gap-1 text-xs"
+                    >
+                      <FileText className="w-3 h-3" />
+                      View Transcript
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      onClick={() => generateTranscript(video)}
+                      disabled={transcribingVideos.has(video.video_id)}
+                      className="flex items-center gap-1 text-xs bg-orange-600 hover:bg-orange-700"
+                    >
+                      {transcribingVideos.has(video.video_id) ? (
+                        <>
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                          Transcribing...
+                        </>
+                      ) : (
+                        <>
+                          <FileText className="w-3 h-3" />
+                          Generate Transcript
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </div>
+
                 {video.tags && video.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1">
                     {video.tags.slice(0, 3).map((tag) => (
@@ -207,6 +324,13 @@ const VideoLibrary = () => {
           <p>No videos found matching your search.</p>
         </div>
       )}
+
+      <TranscriptModal
+        isOpen={transcriptModal.isOpen}
+        onClose={() => setTranscriptModal({ isOpen: false, videoTitle: '', transcript: '' })}
+        videoTitle={transcriptModal.videoTitle}
+        transcript={transcriptModal.transcript}
+      />
     </div>
   );
 };
