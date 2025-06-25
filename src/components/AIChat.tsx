@@ -3,7 +3,10 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { MessageSquare, Send, User, Bot } from 'lucide-react';
+import { MessageSquare, Send, User, Bot, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 
 interface Message {
   id: string;
@@ -13,10 +16,12 @@ interface Message {
 }
 
 const AIChat = () => {
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      content: "Hi! I'm your YouTube AI assistant. Ask me anything about your YouTube content, video topics, or get recommendations!",
+      content: "Hi! I'm your YouTube AI assistant. I can help you analyze your YouTube content, suggest video topics, provide insights about your video library, and answer questions about content strategy. What would you like to know?",
       role: 'assistant',
       timestamp: new Date(),
     }
@@ -25,7 +30,7 @@ const AIChat = () => {
   const [loading, setLoading] = useState(false);
 
   const handleSend = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || !user) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -35,21 +40,57 @@ const AIChat = () => {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const currentInput = input;
     setInput('');
     setLoading(true);
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      console.log('Sending message to AI:', currentInput);
+
+      const { data, error } = await supabase.functions.invoke('ai-chat', {
+        body: {
+          message: currentInput,
+          userId: user.id
+        }
+      });
+
+      if (error) {
+        console.error('Error calling AI function:', error);
+        throw error;
+      }
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: `That's an interesting question about "${input}". Based on your YouTube library, I can help you analyze content trends, suggest related topics, or provide insights about video performance. What specific aspect would you like to explore?`,
+        content: data.response,
         role: 'assistant',
         timestamp: new Date(),
       };
       
       setMessages(prev => [...prev, aiMessage]);
+    } catch (error: any) {
+      console.error('Error getting AI response:', error);
+      
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: "I'm sorry, I encountered an error processing your request. Please try again later.",
+        role: 'assistant',
+        timestamp: new Date(),
+      };
+      
+      setMessages(prev => [...prev, errorMessage]);
+      
+      toast({
+        title: "Error",
+        description: "Failed to get AI response. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -82,7 +123,7 @@ const AIChat = () => {
               </div>
               <Card className={message.role === 'user' ? 'bg-orange-600 text-white' : 'bg-gray-50'}>
                 <CardContent className="p-3">
-                  <p className="text-sm">{message.content}</p>
+                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                 </CardContent>
               </Card>
             </div>
@@ -95,10 +136,9 @@ const AIChat = () => {
             </div>
             <Card className="bg-gray-50">
               <CardContent className="p-3">
-                <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-orange-600" />
+                  <span className="text-sm text-gray-600">AI is thinking...</span>
                 </div>
               </CardContent>
             </Card>
@@ -114,6 +154,7 @@ const AIChat = () => {
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
             className="flex-1"
+            disabled={loading}
           />
           <Button 
             onClick={handleSend}
