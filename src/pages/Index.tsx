@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
@@ -12,6 +11,7 @@ import YouTubeUrlInput from '@/components/YouTubeUrlInput';
 import YouTubeChannelInput from '@/components/YouTubeChannelInput';
 import AIChat from '@/components/AIChat';
 import VideoLibrary from '@/components/VideoLibrary';
+import TheorySearch from '@/components/TheorySearch';
 
 const Index = () => {
   const { user, loading } = useAuth();
@@ -57,20 +57,21 @@ const Index = () => {
             YouTube AI Assistant
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl">
-            hejsan farsanChat with AI about your YouTube content, add videos to your library, and search through your collection by topic.
+            Chat with AI about your YouTube content, add videos to your library, search through your collection by topic, and analyze theories across your videos.
           </p>
         </div>
 
         <Tabs defaultValue="dashboard" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 max-w-md">
+          <TabsList className="grid w-full grid-cols-5 max-w-lg">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="chat">AI Chat</TabsTrigger>
             <TabsTrigger value="library">Library</TabsTrigger>
+            <TabsTrigger value="theory">Theory</TabsTrigger>
             <TabsTrigger value="add">Add Content</TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard" className="space-y-6">
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-4 gap-6">
               <Card className="border-orange-100">
                 <CardHeader>
                   <div className="flex items-center gap-3">
@@ -112,6 +113,29 @@ const Index = () => {
                     className="border-orange-200 text-orange-600 hover:bg-orange-50"
                   >
                     Browse Library
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="border-orange-100">
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                      <Search className="w-5 h-5 text-orange-600" />
+                    </div>
+                    <CardTitle className="text-lg">Theory Search</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600 mb-4">
+                    Analyze your video transcripts to find information about specific theories or topics.
+                  </p>
+                  <Button 
+                    variant="outline"
+                    onClick={() => switchToTab('theory')}
+                    className="border-orange-200 text-orange-600 hover:bg-orange-50"
+                  >
+                    Search Theories
                   </Button>
                 </CardContent>
               </Card>
@@ -180,6 +204,20 @@ const Index = () => {
               </CardHeader>
               <CardContent>
                 <VideoLibrary key={refreshTrigger} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="theory">
+            <Card className="border-orange-100">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Search className="w-5 h-5 text-orange-600" />
+                  Theory & Topic Analysis
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <TheorySearch />
               </CardContent>
             </Card>
           </TabsContent>
