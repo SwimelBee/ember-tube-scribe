@@ -62,52 +62,62 @@ serve(async (req) => {
       )
     }
 
-    // Get audio download URL using yt-dlp approach
-    // Note: This is a simplified approach. In production, you'd want to use a more robust solution
-    const audioUrl = `https://www.youtube.com/watch?v=${videoId}`
-    
-    // For this implementation, we'll use a placeholder approach
-    // In a real-world scenario, you'd need to extract audio from YouTube
-    // which requires additional services or libraries
-    
-    // Placeholder response for now - in production you'd:
-    // 1. Extract audio from YouTube video
-    // 2. Convert to supported format (mp3, wav, etc.)
-    // 3. Send to OpenAI Whisper API
-    // 4. Save transcript to database
-    
-    const placeholderTranscript = `This is a placeholder transcript for video: ${video.title}. 
-    
-    In a production environment, this would contain the actual transcribed audio content from the YouTube video using OpenAI's Whisper API.
-    
-    The process would involve:
-    1. Extracting audio from the YouTube video
-    2. Converting it to a format compatible with OpenAI's API
-    3. Sending the audio to OpenAI's speech-to-text service
-    4. Returning the transcribed text
-    
-    Video details:
-    - Title: ${video.title}
-    - Channel: ${video.channel_title}
-    - Duration: ${video.duration}`;
+    console.log('Generating fake transcript using OpenAI for:', video.title)
 
-    // Update video with transcript
+    // Generate fake transcript using OpenAI
+    const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: `You are tasked with creating a realistic fake video transcript based on a video title. Generate a natural-sounding transcript that would plausibly match the content suggested by the title. The transcript should:
+            - Be 2-3 paragraphs long (300-500 words)
+            - Sound like natural speech with some filler words and pauses
+            - Include realistic content that matches the video title
+            - Have a conversational tone as if someone is speaking to camera
+            - Include some "um", "uh", "you know", "so", etc. to make it sound natural
+            - Not mention that it's fake or generated`
+          },
+          {
+            role: 'user',
+            content: `Generate a realistic transcript for a video titled: "${video.title}"`
+          }
+        ],
+        temperature: 0.8,
+        max_tokens: 600
+      }),
+    });
+
+    if (!openAIResponse.ok) {
+      throw new Error(`OpenAI API error: ${openAIResponse.statusText}`)
+    }
+
+    const openAIData = await openAIResponse.json()
+    const generatedTranscript = openAIData.choices[0].message.content
+
+    // Update video with generated transcript
     const { error: updateError } = await supabase
       .from('youtube_videos')
-      .update({ transcript: placeholderTranscript })
+      .update({ transcript: generatedTranscript })
       .eq('id', video.id)
 
     if (updateError) {
       throw new Error('Failed to save transcript')
     }
 
-    console.log('Transcript generated and saved successfully')
+    console.log('AI-generated transcript saved successfully')
 
     return new Response(
       JSON.stringify({ 
-        transcript: placeholderTranscript,
+        transcript: generatedTranscript,
         success: true,
-        message: 'Transcript generated successfully'
+        message: 'Transcript generated successfully using AI'
       }),
       { 
         headers: { 
