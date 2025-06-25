@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
@@ -6,10 +7,9 @@ import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MessageSquare, Video, Search, Plus, Youtube } from 'lucide-react';
+import { Video, Search, Plus, Youtube } from 'lucide-react';
 import YouTubeUrlInput from '@/components/YouTubeUrlInput';
 import YouTubeChannelInput from '@/components/YouTubeChannelInput';
-import AIChat from '@/components/AIChat';
 import VideoLibrary from '@/components/VideoLibrary';
 import TheorySearch from '@/components/TheorySearch';
 
@@ -57,43 +57,20 @@ const Index = () => {
             YouTube AI Assistant
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl">
-            Chat with AI about your YouTube content, add videos to your library, search through your collection by topic, and analyze theories across your videos.
+            Add videos to your library, search through your collection with AI, and analyze theories across your videos.
           </p>
         </div>
 
         <Tabs defaultValue="dashboard" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 max-w-lg">
+          <TabsList className="grid w-full grid-cols-4 max-w-lg">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-            <TabsTrigger value="chat">AI Chat</TabsTrigger>
             <TabsTrigger value="library">Library</TabsTrigger>
             <TabsTrigger value="theory">Theory</TabsTrigger>
             <TabsTrigger value="add">Add Content</TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard" className="space-y-6">
-            <div className="grid md:grid-cols-4 gap-6">
-              <Card className="border-orange-100">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-                      <MessageSquare className="w-5 h-5 text-orange-600" />
-                    </div>
-                    <CardTitle className="text-lg">AI Chat</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600 mb-4">
-                    Ask questions and get AI-powered responses about your YouTube content and topics.
-                  </p>
-                  <Button 
-                    onClick={() => switchToTab('chat')}
-                    className="bg-orange-600 hover:bg-orange-700"
-                  >
-                    Start Chatting
-                  </Button>
-                </CardContent>
-              </Card>
-
+            <div className="grid md:grid-cols-3 gap-6">
               <Card className="border-orange-100">
                 <CardHeader>
                   <div className="flex items-center gap-3">
@@ -105,7 +82,7 @@ const Index = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600 mb-4">
-                    Browse and search through your curated YouTube video collection.
+                    Browse and search through your curated YouTube video collection with AI-powered search.
                   </p>
                   <Button 
                     variant="outline"
@@ -163,35 +140,6 @@ const Index = () => {
                 </CardContent>
               </Card>
             </div>
-
-            <Card className="border-orange-100">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Search className="w-5 h-5 text-orange-600" />
-                  Quick Search
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 mb-4">Search through your YouTube collection by topic, content, or keywords.</p>
-                <div className="flex gap-2">
-                  <input 
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                    placeholder="Search your videos..."
-                  />
-                  <Button className="bg-orange-600 hover:bg-orange-700">
-                    <Search className="w-4 h-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="chat">
-            <Card className="border-orange-100">
-              <CardContent className="p-6">
-                <AIChat />
-              </CardContent>
-            </Card>
           </TabsContent>
 
           <TabsContent value="library">

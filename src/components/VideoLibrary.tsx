@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, Play, Clock, Eye, Loader2, FileText } from 'lucide-react';
+import { Search, Play, Clock, Eye, Loader2, FileText, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -27,7 +27,9 @@ interface Video {
 const VideoLibrary = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [videos, setVideos] = useState<Video[]>([]);
+  const [filteredVideos, setFilteredVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searching, setSearching] = useState(false);
   const [transcriptModal, setTranscriptModal] = useState<{
     isOpen: boolean;
     videoTitle: string;
@@ -61,6 +63,7 @@ const VideoLibrary = () => {
 
       console.log('Fetched videos:', data?.length || 0);
       setVideos(data || []);
+      setFilteredVideos(data || []);
     } catch (error: any) {
       console.error('Error loading videos:', error);
       toast({
@@ -77,11 +80,66 @@ const VideoLibrary = () => {
     fetchVideos();
   }, [user]);
 
-  const filteredVideos = videos.filter(video =>
-    video.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    video.tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    video.channel_title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleAISearch = async () => {
+    if (!user || !searchTerm.trim()) {
+      setFilteredVideos(videos);
+      return;
+    }
+
+    setSearching(true);
+    try {
+      console.log('Performing AI search for:', searchTerm);
+
+      const { data, error } = await supabase.functions.invoke('ai-video-search', {
+        body: {
+          searchQuery: searchTerm.trim(),
+          userId: user.id
+        }
+      });
+
+      if (error) {
+        console.error('Error calling AI search function:', error);
+        throw error;
+      }
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      setFilteredVideos(data.results || []);
+
+      toast({
+        title: "Search Complete",
+        description: data.message || "AI search completed",
+      });
+
+    } catch (error: any) {
+      console.error('Error performing AI search:', error);
+      
+      // Fallback to basic search
+      const basicFiltered = videos.filter(video =>
+        video.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        video.tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        video.channel_title.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredVideos(basicFiltered);
+      
+      toast({
+        title: "Search Error",
+        description: "AI search failed, showing basic search results",
+        variant: "destructive",
+      });
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  // Reset to all videos when search is cleared
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setFilteredVideos(videos);
+    }
+  }, [searchTerm, videos]);
 
   const formatDuration = (duration: string) => {
     // Convert ISO 8601 duration (PT1H2M3S) to readable format
@@ -207,14 +265,38 @@ const VideoLibrary = () => {
 
   return (
     <div className="space-y-4">
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-        <Input
-          placeholder="Search your video library..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10"
-        />
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <Input
+            placeholder="Search your video library with AI..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                handleAISearch();
+              }
+            }}
+            className="pl-10"
+          />
+        </div>
+        <Button
+          onClick={handleAISearch}
+          disabled={searching || !searchTerm.trim()}
+          className="bg-orange-600 hover:bg-orange-700"
+        >
+          {searching ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              Searching...
+            </>
+          ) : (
+            <>
+              <Sparkles className="w-4 h-4 mr-2" />
+              AI Search
+            </>
+          )}
+        </Button>
       </div>
 
       {videos.length === 0 ? (
@@ -318,7 +400,7 @@ const VideoLibrary = () => {
         </div>
       )}
 
-      {filteredVideos.length === 0 && videos.length > 0 && (
+      {filteredVideos.length === 0 && videos.length > 0 && searchTerm.trim() && (
         <div className="text-center py-8 text-gray-500">
           <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
           <p>No videos found matching your search.</p>
