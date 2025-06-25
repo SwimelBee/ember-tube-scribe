@@ -1,4 +1,3 @@
-
 # Use Node.js 18 alpine as base image
 FROM node:18-alpine as builder
 
@@ -9,7 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci --only=production
+RUN npm ci
 
 # Copy source code
 COPY . .

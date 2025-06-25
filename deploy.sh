@@ -4,7 +4,7 @@
 # Configuration
 PROJECT_ID="vernal-parser-463912-n4"
 SERVICE_NAME="youtube-ai-assistant"
-REGION="us-central1"
+REGION="europe-north2"
 IMAGE_NAME="gcr.io/${PROJECT_ID}/${SERVICE_NAME}"
 
 echo "🚀 Starting deployment to Cloud Run..."
@@ -37,3 +37,5 @@ echo "⚠️  IMPORTANT: Don't forget to update your Supabase URL configuration!
 echo "1. Go to https://supabase.com/dashboard/project/hrhnqwuyhotiswryzgqa/auth/url-configuration"
 echo "2. Update Site URL to your Cloud Run URL"
 echo "3. Add your Cloud Run URL to Redirect URLs"
+# dont close the script, so the user can see the instructions
+read -p "Press enter to continue"

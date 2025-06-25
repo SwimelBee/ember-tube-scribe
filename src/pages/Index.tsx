@@ -57,7 +57,7 @@ const Index = () => {
             YouTube AI Assistant
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl">
-            Chat with AI about your YouTube content, add videos to your library, and search through your collection by topic.
+            hejsan farsanChat with AI about your YouTube content, add videos to your library, and search through your collection by topic.
           </p>
         </div>
 
